@@ -18,6 +18,10 @@ app.use(cors({ origin: `http://localhost:5173` }));
 
 app.use("/tracks", trackRouter);
 
+app.use("*", (req, res) => {
+  res.json({ error: "404 not found" });
+});
+
 app.listen(3000, () => {
   console.log("The express app is ready!");
 });

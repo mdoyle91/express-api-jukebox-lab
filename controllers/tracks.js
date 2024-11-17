@@ -4,16 +4,18 @@ const router = express.Router();
 
 router.post(`/`, async (req, res) => {
   try {
-    const createdTrack = Track.create(req.body);
+    const createdTrack = await Track.create(req.body);
+    res.status(201).json(createdTrack);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-  res.json({ message: `Create route` });
 });
 
 router.get(`/`, async (req, res) => {
   try {
     const foundTracks = await Track.find();
+    if (!foundTracks.length)
+      res.status(500).json({ message: "No tracks found" });
     res.status(200).json(foundTracks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -26,7 +28,7 @@ router.get(`/:trackId`, async (req, res) => {
 
     if (!foundTrack) {
       res.status(404);
-      throw new Error(`Pet not found.`);
+      throw new Error(`Track not found.`);
     }
 
     res.status(200).json(foundTrack);
@@ -42,30 +44,31 @@ router.get(`/:trackId`, async (req, res) => {
 router.delete(`/:trackId`, async (req, res) => {
   try {
     const deletedTrack = await Track.findByIdAndDelete(req.params.trackId);
-    res.status(200).json(`${deletedTrack.name} has been deleted.`);
-
     if (!deletedTrack) {
       res.status(404);
       throw new Error(`Track not found.`);
     }
+    console.log(deletedTrack);
 
-    res.status(200).json(`${deletedTrack.name} has been deleted.`);
+    res.status(200).json(`${deletedTrack.title} has been deleted.`);
   } catch (error) {
-    if (res.statusCode === 404) {
-      res.json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message }); //I altered this per Austin's commentary with an else statement, but it's still causing the server to crash each time I use the delete route despite deleting the track. I also tried adding an esle statement inside of the try block, and that caused the entire server to crash and did not delete the route.
-    }
+    res.status(500).json({ error: error.message });
   }
 });
 
 router.put(`/:trackId`, async (req, res) => {
   try {
-    const updatedPet = await Track.findByIdAndUpdate(
+    const updatedTrack = await Track.findByIdAndUpdate(
       req.params.trackId,
-      req.body
+      req.body,
+      { new: true }
     );
-    res.json({ message: `Update route` }); //Added this line to get a message when updating per Austin's comments. After testing the route, I'm not getting the message, so I believe this has been remedied.
+    if (!updatedTrack) {
+      res.status(404);
+      throw new Error(`Track not found.`);
+    }
+    res.status(200).json(updatedTrack);
+    //Added this line to get a message when updating per Austin's comments. After testing the route, I'm not getting the message, so I believe this has been remedied.
   } catch (error) {
     if (res.statusCode === 404) {
       res.json({ error: error.message });
