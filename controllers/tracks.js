@@ -49,12 +49,13 @@ router.delete(`/:trackId`, async (req, res) => {
       throw new Error(`Track not found.`);
     }
 
-    res.status(200).json(`${adoptedTrack.name} has been adopted.`);
+    res.status(200).json(`${deletedTrack.name} has been deleted.`);
   } catch (error) {
     if (res.statusCode === 404) {
       res.json({ error: error.message });
+    } else {
+      res.status(500).json({ error: error.message }); //I altered this per Austin's commentary with an else statement, but it's still causing the server to crash each time I use the delete route despite deleting the track. I also tried adding an esle statement inside of the try block, and that caused the entire server to crash and did not delete the route.
     }
-    res.status(500).json({ error: error.message });
   }
 });
 
@@ -64,6 +65,7 @@ router.put(`/:trackId`, async (req, res) => {
       req.params.trackId,
       req.body
     );
+    res.json({ message: `Update route` }); //Added this line to get a message when updating per Austin's comments. After testing the route, I'm not getting the message, so I believe this has been remedied.
   } catch (error) {
     if (res.statusCode === 404) {
       res.json({ error: error.message });
